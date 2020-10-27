@@ -16,5 +16,5 @@ module.exports = mongoose.model('Recipe', new mongoose.Schema(
             ref: 'Foodbook',
         }],
     },
-    {timestamps = true},
+    {timestamps: true},
 ));
