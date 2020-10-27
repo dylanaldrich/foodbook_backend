@@ -1,9 +1,8 @@
 const mongoose = require('mongoose');
-const User = require('./User');
 
-const recipeSchema = new mongoose.Schema(
+module.exports = mongoose.model('Recipe', new mongoose.Schema(
     {
-        api_id: {
+        edamam_id: {
             type: String,
             required: true,
             unique: true,
@@ -18,8 +17,4 @@ const recipeSchema = new mongoose.Schema(
         }],
     },
     {timestamps = true},
-);
-
-const recipeModel = mongoose.model('Recipe', recipeSchema)
-
-module.exports = recipeModel;
+));
