@@ -18,6 +18,10 @@ const userSchema = new mongoose.Schema(
             required: true,
             match: /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.[\W]).{8,}$/, // Password must have at least 8 characters, lowercase, Uppercase, number, non-alphanumeric symbol
         },
+        foodbooks: [{
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Foodbook',
+        }],
     },
     {timestamps: true}
 );

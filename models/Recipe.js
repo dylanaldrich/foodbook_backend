@@ -12,6 +12,10 @@ const recipeSchema = new mongoose.Schema(
             type: String,
             required: true,
         },
+        foodbooks: [{
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Foodbook',
+        }],
     },
     {timestamps = true},
 );
