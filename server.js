@@ -3,7 +3,8 @@ const express = require('express');
 const cors = require('cors');
 
 /* Internal imports */
-const routes = require('./routes');
+const controllers = require('./controllers');
+const authRequired = require('./middleware/authRequired');
 
 /* Config */
 const PORT = proc.env.PORT || 3001;
@@ -14,16 +15,19 @@ app.use(express.json());
 app.use(cors());
 
 // Auth routes
-app.use('/auth', routes.auth);
+app.use('/auth', controllers.auth);
 
-// User routes
-app.use('/user', routes.user);
+// Search route
+app.use('/search', controllers.search);
 
-// Foodbooks routes
-app.use('/foodbooks', routes.foodbooks);
+// User routes (auth required)
+app.use('/user', controllers.user);
 
-// Recipes routes
-app.use('/recipes', routes.recipes);
+// Foodbooks routes (auth required)
+app.use('/foodbooks', controllers.foodbooks);
+
+// Recipes routes (auth required)
+app.use('/recipes', controllers.recipes);
 
 /* Connection */
 app.listen(PORT, () => console.log( `Server is running on port ${PORT}`));
