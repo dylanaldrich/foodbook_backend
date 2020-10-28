@@ -39,9 +39,52 @@ router.post('/register', async (req, res) => {
 });
 
 // login route
+router.post('/login', async (req, res) => {
+    try {
+        const foundUser = await db.User.findOne({email : req.body.email});
+
+        console.log("foundUser: ", foundUser);
+
+        if(!foundUser) {
+            return res.sendStatus(500).json({message: 'The username or password is incorrect.'});
+        }
+
+        const match = await bcrypt.compare(req.body.password, foundUser.password);
+
+        if(!match) {
+            return res.sendStatus(500).json({message: 'The username or password is incorrect.'});
+        } else {
+            const signedJwt = await jwt.sign(
+                {
+                    _id: foundUser._id,
+                },
+                'super_secret_key',
+                {
+                    expiresIn: '1h',
+                }
+            );
+
+            return res.status(200).json({
+                status: 200,
+                message: 'Success',
+                id: foundUser._id,
+                signedJwt,
+            });
+        }
+    } catch (error) {
+        return res
+            .status(500)
+            .json({
+                status: 500,
+                message: "Something went wrong. Please try again.",
+                error: error,
+            });
+    }
+});
 
 
 // logout route
+// handled on the frontend by deleting token from local storage
 
 
 module.exports = router;

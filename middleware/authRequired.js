@@ -8,7 +8,7 @@ module.exports = (req, res, next) => {
         jwt.verify(token, 'super_secret_key', function(err, payload) {
             if(err) return res.status(500).json({message: 'Invalid token'});
 
-            req.userID = payload._id;
+            req.userId = payload._id;
             next();
         });
     } else {
