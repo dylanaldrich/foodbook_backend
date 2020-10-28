@@ -25,7 +25,7 @@ app.use('/auth', controllers.auth);
 app.use('/user', controllers.user);
 
 // Foodbooks routes (auth required)
-// app.use('/foodbooks', controllers.foodbooks);
+app.use('/foodbooks', controllers.foodbooks);
 
 // Recipes routes (auth required)
 // app.use('/recipes', controllers.recipes);

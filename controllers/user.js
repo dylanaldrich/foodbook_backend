@@ -6,7 +6,7 @@ const db = require('../models');
 router.get('/:userId', async (req, res) => {
     try {
         const foundUser = await db.User.findById(req.params.userId);
-        
+
         res.status(200).json({status: 200, data: foundUser});
     } catch (error) {
         return res.status(500).json({
@@ -15,8 +15,6 @@ router.get('/:userId', async (req, res) => {
         });
     }
 });
-
-// user edit -- Handled on the front end?
 
 // user update
 router.put('/:userId', async (req, res) => {

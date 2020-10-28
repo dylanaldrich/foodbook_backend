@@ -2,17 +2,34 @@ const express = require('express');
 const router = express.Router();
 const db = require('../models');
 
+// TODO once we know how to isolate userId, add in gatekeeping to foodbook show, update and delete to make sure that currentUser is the owner of the foodbook before handling the request
 
 // foodbook create
 router.post('/', async (req, res) => {
     try {
         // TODO find the current user in order to push the created foodbook into their foodbooks array
-        // const currentUser = await db.User.find
+        //const currentUser = await db.User.findById()
 
+        // create the foodbook
+        const createdFoodbook = await db.Foodbook.create(req.body); // this might need to be req.body
+
+        // give foodbook's user prop the value of currentUser
+        // createdFoodbook.user = currentUser;
+        createdFoodbook.save();
+
+        // push the new foodbook into currentUser's foodbooks array
+        // currentUser.foodbooks.push(createdFoodbook);
+        // currentUser.save();
+
+        res.status(201).json({foodbook: createdFoodbook});
     } catch (error) {
-        
+        return res.status(500).json({
+            status: 500,
+            message: 'Something went wrong. Please try again.',
+            error: error
+        });
     }
-})
+});
 
 
 // foodbook show
@@ -28,8 +45,6 @@ router.get('/:foodbookId', async (req, res) => {
         });
     }
 });
-
-// foodbook edit -- Handled on the front end?
 
 // foodbook update
 router.put('/:foodbookId', async (req, res) => {
