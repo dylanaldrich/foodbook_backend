@@ -7,19 +7,19 @@ const db = require('../models');
 // foodbook create
 router.post('/', async (req, res) => {
     try {
-        // TODO find the current user in order to push the created foodbook into their foodbooks array
-        //const currentUser = await db.User.findById()
+        // find the current user in order to push the created foodbook into their foodbooks array
+        const currentUser = await db.User.findById(req.userId)
 
         // create the foodbook
-        const createdFoodbook = await db.Foodbook.create(req.body); // this might need to be req.body
+        const createdFoodbook = await db.Foodbook.create(req.body);
 
         // give foodbook's user prop the value of currentUser
-        // createdFoodbook.user = currentUser;
+        createdFoodbook.user = currentUser;
         createdFoodbook.save();
 
         // push the new foodbook into currentUser's foodbooks array
-        // currentUser.foodbooks.push(createdFoodbook);
-        // currentUser.save();
+        currentUser.foodbooks.push(createdFoodbook);
+        currentUser.save();
 
         res.status(201).json({foodbook: createdFoodbook});
     } catch (error) {
@@ -31,13 +31,15 @@ router.post('/', async (req, res) => {
     }
 });
 
-
 // foodbook show
 router.get('/:foodbookId', async (req, res) => {
     try {
         const foundFoodbook = await db.Foodbook.findById(req.params.foodbookId);
-        
-        res.status(200).json({foodbook: foundFoodbook});
+
+        // verify that the current user is the owner of the foodbook
+        if(foundFoodbook.user._id === req.userId){
+            res.status(200).json({foodbook: foundFoodbook});
+        }
     } catch (error) {
         return res.status(500).json({
             status: 500,
@@ -54,7 +56,10 @@ router.put('/:foodbookId', async (req, res) => {
         // extra failsafe to handle if user doesn't exist
         if(!updatedFoodbook) return res.status(200).json({message: "Sorry, that foodbook doesn't exist in our database. Please try again."}); 
 
-        res.status(200).json({updatedFoodbook: updatedFoodbook});
+        // verify that the current user is the owner of the foodbook
+        if(foundFoodbook.user._id === req.userId){
+            res.status(200).json({updatedFoodbook: updatedFoodbook});
+        }
     } catch (error) {
         return res.status(500).json({
             status: 500,
@@ -73,23 +78,26 @@ router.delete('/:foodbookId', async (req, res) => {
         // extra failsafe to handle if foodbook doesn't exist
         if(!deletedFoodbook) return res.status(200).json({message: "Sorry, that foodbook doesn't exist in our database. Please try again."}); 
 
-        // remove saved recipes from the foodbook
-        const recipesToRemove = deletedFoodbook.recipes;
-        for (recipe in recipesToRemove) {
-            // if a recipe is only saved to one foodbook, delete the recipe entirely
-            if (recipe.foodbooks.length <= 1) {
-                recipe.deleteOne();
-            } else {
-                // otherwise, just remove deletedFoodbook from that recipe's foodbooks array
-                recipe.foodbooks.remove(deletedFoodbook);
-                recipe.save();
+        // verify that the current user is the owner of the foodbook
+        if(foundFoodbook.user._id === req.userId){
+            // update/delete recipes stored the deleted foodbook
+            const recipesToRemove = deletedFoodbook.recipes;
+            for (recipe in recipesToRemove) {
+                // if a recipe is only saved to one foodbook, delete the recipe entirely
+                if (recipe.foodbooks.length <= 1) {
+                    recipe.deleteOne();
+                } else {
+                    // otherwise, just remove deletedFoodbook from that recipe's foodbooks array, therefore the recipe can remain saved in other foodbooks
+                    recipe.foodbooks.remove(deletedFoodbook);
+                    recipe.save();
+                }
             }
+
+            // delete user from db
+            deletedFoodbook.deleteOne();
+
+            res.sendStatus(200).json({deletedFoodbook: deletedFoodbook});
         }
-
-        // delete user from db
-        deletedFoodbook.deleteOne();
-
-        res.sendStatus(200).json({deletedFoodbook: deletedFoodbook});
     } catch (error) {
         return res.status(500).json({
             status: 500,
