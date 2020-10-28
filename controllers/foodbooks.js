@@ -1,8 +1,9 @@
+/* imports */
 const express = require('express');
 const router = express.Router();
 const db = require('../models');
 
-// TODO once we know how to isolate userId, add in gatekeeping to foodbook show, update and delete to make sure that currentUser is the owner of the foodbook before handling the request
+/* Foodbooks routes */
 
 // foodbook create
 router.post('/', async (req, res) => {
@@ -31,6 +32,7 @@ router.post('/', async (req, res) => {
     }
 });
 
+
 // foodbook show
 router.get('/:foodbookId', async (req, res) => {
     try {
@@ -47,6 +49,7 @@ router.get('/:foodbookId', async (req, res) => {
         });
     }
 });
+
 
 // foodbook update
 router.put('/:foodbookId', async (req, res) => {
@@ -67,6 +70,7 @@ router.put('/:foodbookId', async (req, res) => {
         });
     }
 });
+
 
 // foodbook delete
 router.delete('/:foodbookId', async (req, res) => {
@@ -106,4 +110,6 @@ router.delete('/:foodbookId', async (req, res) => {
     }
 });
 
+
+/* Exports */
 module.exports = router;
