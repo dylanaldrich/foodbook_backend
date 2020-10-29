@@ -9,7 +9,10 @@ const db = require('../models');
 router.post('/', async (req, res) => {
     try {
         // find the current user in order to push the created foodbook into their foodbooks array
-        const currentUser = await db.User.findById(req.userId)
+        // const currentUser = await db.User.findById(req.userId)
+        /* FOR TESTING ONLY: */
+        const currentUser = await db.User.findById(req.body.userId); // during testing, pass in a userId in the req.body
+        /* END TEST */
 
         // create the foodbook
         const createdFoodbook = await db.Foodbook.create(req.body);
@@ -22,7 +25,9 @@ router.post('/', async (req, res) => {
         currentUser.foodbooks.push(createdFoodbook);
         currentUser.save();
 
-        res.status(201).json({foodbook: createdFoodbook});
+        res.status(201).json({
+            foodbook: createdFoodbook,
+            foodbookOwner: currentUser}); // <= for testing
     } catch (error) {
         return res.status(500).json({
             status: 500,
@@ -39,9 +44,9 @@ router.get('/:foodbookId', async (req, res) => {
         const foundFoodbook = await db.Foodbook.findById(req.params.foodbookId);
 
         // verify that the current user is the owner of the foodbook
-        if(foundFoodbook.user._id === req.userId){
+        // if(foundFoodbook.user._id === req.userId){
             res.status(200).json({foodbook: foundFoodbook});
-        }
+        // }
     } catch (error) {
         return res.status(500).json({
             status: 500,
@@ -60,9 +65,9 @@ router.put('/:foodbookId', async (req, res) => {
         if(!updatedFoodbook) return res.status(200).json({message: "Sorry, that foodbook doesn't exist in our database. Please try again."}); 
 
         // verify that the current user is the owner of the foodbook
-        if(updatedFoodbook.user._id === req.userId){
+        // if(updatedFoodbook.user === req.userId){
             res.status(200).json({updatedFoodbook: updatedFoodbook});
-        }
+        // }
     } catch (error) {
         return res.status(500).json({
             status: 500,
@@ -76,33 +81,28 @@ router.put('/:foodbookId', async (req, res) => {
 router.delete('/:foodbookId', async (req, res) => {
     try {
         // find foodbook to be deleted; populate its recipes and user
-        const deletedFoodbook = await db.Foodbook.findById(req.params.foodbookId)
-            .populate('Recipe')
-            .populate('User')
-            .exec(); // TODO is it necessary to populate here?
+        const deletedFoodbook = await db.Foodbook.findById(req.params.foodbookId).populate('Recipes').exec();
         
         // extra failsafe to handle if foodbook doesn't exist
         if(!deletedFoodbook) return res.status(200).json({message: "Sorry, that foodbook doesn't exist in our database. Please try again."}); 
         
         // verify that the current user is the owner of the foodbook
-        if(deletedFoodbook.user._id === req.userId) {
+        // if(deletedFoodbook.user._id === req.userId) {
             // remove foodbook reference from user
-            const foodbookUser = deletedFoodbook.user;
-            await foodbookUser.foodbooks.remove(deletedFoodbook);
-            foodbookUser.save();
+            const foodbookUser = await db.User.findById(deletedFoodbook.user);
+            foodbookUser.foodbooks.remove(deletedFoodbook); // might need await
+            await foodbookUser.save();
 
             // remove foodbook reference(s) from associated recipes
             if(deletedFoodbook.recipes.length) {
-                for(recipe in deletedFoodbook.recipes) {
+                for(recipe of deletedFoodbook.recipes) {
+                    const foundRecipe = await db.Recipe.findById(recipe);
                     // if a recipe is only saved to one foodbook, completely delete the recipe from db
-                    if (recipe.foodbooks.length === 1) {
-                        db.Recipe.findByIdAndDelete(recipe._id);
+                    if (foundRecipe.foodbooks.length === 1) {
+                        await foundRecipe.deleteOne();
                     } else {
-                        // TODO ask instructor if this is actually removing the foodbook association from the original recipe document in the db (or if it needs to be done like above, by querying the db)
-                        // otherwise, just remove deletedFoodbook from that recipe's foodbooks array, therefore the recipe can remain saved in other foodbooks
-
-                        recipe.foodbooks.remove(deletedFoodbook);
-                        recipe.save();
+                        foundRecipe.foodbooks.remove(deletedFoodbook);
+                        await foundRecipe.save();
                     }
                 }
             }
@@ -110,8 +110,8 @@ router.delete('/:foodbookId', async (req, res) => {
             // delete foodbook from db
             deletedFoodbook.deleteOne();
 
-            res.sendStatus(200).json({deletedFoodbook: deletedFoodbook});
-        }
+            res.status(200).json({message: "Delete successful"});
+        // }
     } catch (error) {
         return res.status(500).json({
             status: 500,

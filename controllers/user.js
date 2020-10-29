@@ -57,7 +57,7 @@ router.delete('/:userId', async (req, res) => {
         // delete user from db
         deletedUser.deleteOne();
 
-        res.sendStatus(200).json({status: 200, data: deletedUser});
+        res.sendStatus(200).json({message: 'User deleted successfully.'});
     } catch (error) {
         return res.status(500).json({
             status: 500,

@@ -28,7 +28,7 @@ app.use('/user', controllers.user);
 app.use('/foodbooks', controllers.foodbooks);
 
 // Recipes routes (auth required)
-// app.use('/recipes', controllers.recipes);
+app.use('/recipes', controllers.recipes);
 
 /* Connection */
 app.listen(PORT, () => console.log( `Server is running on port ${PORT}`));

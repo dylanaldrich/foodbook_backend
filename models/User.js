@@ -21,6 +21,10 @@ const userSchema = new mongoose.Schema(
             type: mongoose.Schema.Types.ObjectId,
             ref: 'Foodbook',
         }],
+        // recipes: [{
+        //     type: mongoose.Schema.Types.ObjectId,
+        //     ref: 'Recipe',
+        // }],
     },
     {timestamps: true}
 );
