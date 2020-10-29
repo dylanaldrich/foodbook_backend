@@ -24,10 +24,12 @@ router.post('/', async (req, res) => {
                 // push the foodbook into the recipe's foodbooks array
                 // await createdRecipe.foodbooks.push(foodbook);
                 /* FOR TESTING PURPOSES: */
-                const linkedFoodbook = await db.Foodbook.findById(req.body.foodbookId); // pass in a foodbookId in the request in insomnia
-                createdRecipe.foodbooks.push(linkedFoodbook);
-                linkedFoodbook.recipes.push(createdRecipe);
-                await linkedFoodbook.save();
+                for(foodbook of req.body.foodbooks){ // pass in an array of foodbookIds in the request in insomnia
+                    const linkedFoodbook = await db.Foodbook.findById(foodbook); 
+                    await createdRecipe.foodbooks.push(linkedFoodbook);
+                    linkedFoodbook.recipes.push(createdRecipe);
+                    await linkedFoodbook.save();
+                }
                 /* END TEST */
 
                 // push the new recipe into each foodbook's recipes array; save the foodbook
@@ -38,6 +40,7 @@ router.post('/', async (req, res) => {
         // add the user to the recipe
         createdRecipe.user = currentUser;
         createdRecipe.save();
+        console.log("createdRecipe AFTER save: ", createdRecipe);
 
         // add the recipe to the user
         currentUser.recipes.push(createdRecipe);
@@ -45,7 +48,6 @@ router.post('/', async (req, res) => {
 
         res.status(201).json({
             recipe: createdRecipe,
-            linkedFoodbook: linkedFoodbook, // <= for testing
             currentUser: currentUser, // <= for testing
         });
     } catch (error) {
@@ -185,8 +187,27 @@ router.delete('/:recipeId', async (req, res) => {
     }
 });
 
-// recipe remove from foodbook (but not delete)
+// recipe remove from one foodbook
+router.post('/:recipeId/:foodbookId', async (req, res) => {
+    try {
+        const removedRecipe = await db.Recipe.findById(req.params.recipeId);
+        const foodbookToUpdate = await db.Foodbook.findById(req.params.foodbookId);
 
+        foodbookToUpdate.recipes.remove(removedRecipe);
+        await foodbookToUpdate.save();
+
+        removedRecipe.foodbooks.remove(foodbookToUpdate);
+        await removedRecipe.save();
+
+        res.status(200).json({message: "Recipe removed succesfully."});
+    } catch (error) {
+        return res.status(500).json({
+            status: 500,
+            message: 'Something went wrong. Please try again.',
+            error: error,
+        });
+    }
+});
 
 
 /* Exports */
