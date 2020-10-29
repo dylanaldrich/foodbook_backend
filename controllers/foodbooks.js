@@ -59,7 +59,7 @@ router.get('/:foodbookId', async (req, res) => {
 // foodbook update
 router.put('/:foodbookId', async (req, res) => {
     try {
-        const updatedFoodbook = await db.Foodbook.findByIdAndUpdate(req.params.foodbookId, req.body, {new: true}); // TODO do I need to populate the user here, so I can reference it on line 63?
+        const updatedFoodbook = await db.Foodbook.findByIdAndUpdate(req.params.foodbookId, req.body, {new: true});
 
         // extra failsafe to handle if user doesn't exist
         if(!updatedFoodbook) return res.status(200).json({message: "Sorry, that foodbook doesn't exist in our database. Please try again."}); 

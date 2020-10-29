@@ -16,7 +16,6 @@ router.post('/', async (req, res) => {
         // const currentUser = await db.User.findById(req.userId)
         /* FOR TESTING PURPOSES: */
         const currentUser = await db.User.findById(req.body.userId)
-        console.log("currentUser: ", currentUser);
         /* END TEST */
 
         // for each of the current user's foodbooks that was checked on the new recipe form, set up the two-way connection between recipe and foodbook(s)
@@ -36,12 +35,13 @@ router.post('/', async (req, res) => {
                 // foodbook.save();
         //     }
         // }
-        // link the recipe to its creator
+        // add the user to the recipe
         createdRecipe.user = currentUser;
-
-        // now that the new recipe has its foodbook(s) linked, save the recipe
         createdRecipe.save();
-        console.log("createdRecipe after save: ", createdRecipe);
+
+        // add the recipe to the user
+        currentUser.recipes.push(createdRecipe);
+        currentUser.save();
 
         res.status(201).json({
             recipe: createdRecipe,
@@ -146,41 +146,47 @@ router.put('/:recipeId', async (req, res) => {
 router.delete('/:recipeId', async (req, res) => {
     try {
         // find recipe to be deleted, populate its foodbooks, user
-        const deletedRecipe = await db.Recipe.findById(req.params.recipeId)
-            .populate('Foodbook').exec(); // TODO is it necessary to populate here?
-
+        const deletedRecipe = await db.Recipe.findById(req.params.recipeId);
+        console.log("deletedRecipe: ", deletedRecipe);
         // extra failsafe to handle if recipe doesn't exist
         if(!deletedRecipe) return res.status(200).json({message: "Sorry, that recipe doesn't exist in our database. Please try again."}); 
 
         // verify that the current user is the owner of the recipe
-        if(deletedRecipe.user._id === req.userId){
-            // update/delete recipes stored the deleted recipe
-            const recipesToRemove = deletedRecipe.recipes;
-            for (recipe in recipesToRemove) {
-                // if a recipe is only saved to one recipe, delete the recipe entirely
-                if (recipe.recipes.length <= 1) {
-                    recipe.deleteOne();
-                } else {
-                    // otherwise, just remove deletedRecipe from that recipe's recipes array, therefore the recipe can remain saved in other recipes
-                    recipe.recipes.remove(deletedRecipe);
-                    recipe.save();
-                }
+        // if(deletedRecipe.user === req.userId){ //uncomment for production
+            // update foodbooks where recipe is stored
+            const foodbooksToUpdate = deletedRecipe.foodbooks;
+            console.log("foodbooksToUpdate: ", foodbooksToUpdate);
+            for (foodbook of foodbooksToUpdate) {
+                // find each foodbook in the db
+                const foodbookToUpdate = await db.Foodbook.findById(foodbook)
+                // remove the reference to deletedRecipe; save foodbook
+                foodbookToUpdate.recipes.remove(deletedRecipe);
+                await foodbookToUpdate.save();
             }
 
-            // delete user from db
+            // remove deletedRecipe from its user
+            const userToUpdate = await db.User.findById(deletedRecipe.user);
+            userToUpdate.recipes.remove(deletedRecipe);
+
+            // delete recipe from db
             deletedRecipe.deleteOne();
 
-            res.sendStatus(200).json({deletedRecipe: deletedRecipe});
-        }
+            res.status(200).json({
+                message: "Delete successful",
+                userToUpdate: userToUpdate,
+            });
+        // } uncomment for production
     } catch (error) {
         return res.status(500).json({
             status: 500,
-            message: 'Something went wrong. Please try again.'
+            message: 'Something went wrong. Please try again.',
+            error: error,
         });
     }
 });
 
 // recipe remove from foodbook (but not delete)
+
 
 
 /* Exports */
