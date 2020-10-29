@@ -19,7 +19,7 @@ app.use(cors());
 app.use('/auth', controllers.auth);
 
 // Search route
-// app.use('/search', controllers.search);
+app.use('/search', controllers.search);
 
 // User routes (auth required)
 app.use('/user', controllers.user);

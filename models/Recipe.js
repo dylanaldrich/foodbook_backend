@@ -2,8 +2,8 @@ const mongoose = require('mongoose');
 
 module.exports = mongoose.model('Recipe', new mongoose.Schema(
     {
-        edamam_id: {
-            type: String,
+        edamam_object: {
+            type: Object,
             required: true,
             unique: true,
         },
