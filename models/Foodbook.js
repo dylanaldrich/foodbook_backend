@@ -8,7 +8,7 @@ module.exports = mongoose.model('Foodbook', new mongoose.Schema(
         },
         recipes: [{
             type: mongoose.Schema.Types.ObjectId,
-            ref: 'Recipe'
+            ref: 'Recipes'
         }],
         user: {
             type: mongoose.Schema.Types.ObjectId,

@@ -25,6 +25,9 @@ router.post('/', async (req, res) => {
                 foodbook.save();
             }
         }
+        // link the recipe to its creator
+        createdRecipe.user = currentUser;
+
         // now that the new recipe has its foodbook(s) linked, save the recipe
         createdRecipe.save();
 
@@ -60,19 +63,46 @@ router.post('/', async (req, res) => {
 // recipe update
 router.put('/:recipeId', async (req, res) => {
     try {
-        const updatedRecipe = await db.Recipe.findByIdAndUpdate(req.params.recipeId, req.body, {new: true});
+        // find current user
+        const currentUser = await db.User.findById(req.userId);
 
-        // extra failsafe to handle if user doesn't exist
-        if(!updatedRecipe) return res.status(200).json({message: "Sorry, that recipe doesn't exist in our database. Please try again."}); 
+        // find the recipe to be updated
+        const recipeToUpdate = await db.Recipe.findById(req.params.recipeId);
 
-        // verify that the current user is the owner of the recipe
-        if(foundRecipe.user._id === req.userId){
+        // verify that the current user is the owner of the recipe before handling update
+        if(currentUser._id === req.userId){
+            // handle if recipe is added/removed from any foodbook(s)
+            for(foodbook in currentUser.foodbooks) {
+                const checkedFoodbook = req.body['foodbook_' + foodbook._id] === 'on';
+                const isInFoodbook = recipeToUpdate.foodbooks.includes(String(foodbook._id));
+                const isAddedFoodbook = checkedFoodbook && !isInFoodbook;
+                const isRemovedFoodbook = isInFoodbook && !checkedFoodbook;
+
+                if(isAddedFoodbook) {
+                    await recipeToUpdate.foodbooks.push(foodbook);
+                    foodbook.recipes.push(recipeToUpdate);
+                    foodbook.save();
+                } 
+                else if (isRemovedFoodbook) {
+                    await recipeToUpdate.foodbooks.remove(foodbook);
+                    foodbook.recipes.remove(recipeToUpdate);
+                    foodbook.save();
+                }
+            }
+            await recipeToUpdate.save();
+
+            const updatedRecipe = await db.Recipe.findByIdAndUpdate(req.params.recipeId, req.body, {new: true});
+
+            // extra failsafe to handle if recipe doesn't exist
+            if(!updatedRecipe) return res.status(200).json({message: "Sorry, that recipe doesn't exist in our database. Please try again."}); 
+
             res.status(200).json({updatedRecipe: updatedRecipe});
         }
     } catch (error) {
         return res.status(500).json({
             status: 500,
-            message: 'Something went wrong. Please try again.'
+            message: 'Something went wrong. Please try again.',
+            error: error,
         });
     }
 });

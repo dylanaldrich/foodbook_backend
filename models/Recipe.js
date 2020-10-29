@@ -13,8 +13,12 @@ module.exports = mongoose.model('Recipe', new mongoose.Schema(
         },
         foodbooks: [{
             type: mongoose.Schema.Types.ObjectId,
-            ref: 'Foodbook',
+            ref: 'Foodbooks',
         }],
+        user: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'User',
+        },
     },
     {timestamps: true},
 ));

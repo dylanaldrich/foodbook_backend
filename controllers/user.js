@@ -5,7 +5,13 @@ const db = require('../models');
 // user show
 router.get('/:userId', async (req, res) => {
     try {
-        const foundUser = await db.User.findById(req.params.userId);
+        const foundUser = await db.User.findById(req.params.userId)
+            .populate({
+                path: 'Foodbooks',
+                populate: {
+                    path: 'Recipes'
+                }
+            });
 
         res.status(200).json({status: 200, data: foundUser});
     } catch (error) {
@@ -37,8 +43,7 @@ router.put('/:userId', async (req, res) => {
 router.delete('/:userId', async (req, res) => {
     try {
         // find user to be deleted, populate their foodbooks
-        const deletedUser = await db.User.findById(req.params.userId)
-            .populate({path: 'foodbooks'}).exec();
+        const deletedUser = await db.User.findById(req.params.userId);
 
         // extra failsafe to handle if user doesn't exist
         if(!deletedUser) return res.status(200).json({message: "Sorry, that user doesn't exist in our database. Please try again."}); 
