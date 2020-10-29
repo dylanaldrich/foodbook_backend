@@ -24,12 +24,12 @@ router.post('/', async (req, res) => {
                 // push the foodbook into the recipe's foodbooks array
                 // await createdRecipe.foodbooks.push(foodbook);
                 /* FOR TESTING PURPOSES: */
-                for(foodbook of req.body.foodbooks){ // pass in an array of foodbookIds in the request in insomnia
-                    const linkedFoodbook = await db.Foodbook.findById(foodbook); 
-                    await createdRecipe.foodbooks.push(linkedFoodbook);
+                req.body.foodbooks.forEach(async (foodbook) => { // pass in an array of foodbookIds in the request in insomnia
+                    const linkedFoodbook = await db.Foodbook.findById(foodbook);
+                    createdRecipe.foodbooks.push(linkedFoodbook);
                     linkedFoodbook.recipes.push(createdRecipe);
                     await linkedFoodbook.save();
-                }
+                });
                 /* END TEST */
 
                 // push the new recipe into each foodbook's recipes array; save the foodbook
