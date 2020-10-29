@@ -32,6 +32,11 @@ router.get('/:query', async (req, res) => {
 // recipe detail
 router.get('/show/:recipeUri', async (req, res) => {
     try {
+        /* NOTE: The query works if I set q with a value of the very end of a recipe's URI, which looks to be like its id. However, there is no specific key/value pair with a recipe ID from Edamam. */
+        //For example: 
+        // URI: http://www.edamam.com/ontologies/edamam.owl#recipe_aad2ecd8d553def1b85da00a45fc6e29
+        // therefore, the query works if I can isolate the ending: aad2ecd8d553def1b85da00a45fc6e29
+
         const foundRecipe = await axios.get('https://api.edamam.com/search', {
             params: {
                 q: req.params.recipeUri,

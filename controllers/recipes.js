@@ -6,6 +6,7 @@ const db = require('../models');
 /* Recipes routes */
 
 // recipe create
+// NOTE: Not sure how to pass in the necessary info from the API response object to save a recipe into my db and be able to access it later
 router.post('/', async (req, res) => {
     try {
         // create the recipe
