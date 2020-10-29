@@ -66,11 +66,18 @@ router.put('/:recipeId', async (req, res) => {
         // find current user
         const currentUser = await db.User.findById(req.userId);
 
-        // find the recipe to be updated
-        const recipeToUpdate = await db.Recipe.findById(req.params.recipeId);
+        // find the recipe to be updated; populate its user and their foodbooks
+        const recipeToUpdate = await db.Recipe.findById(req.params.recipeId)
+            .populate({
+                path: 'User',
+                populate: {
+                    path: 'Foodbook',
+                }
+            })
+            .exec();
 
         // verify that the current user is the owner of the recipe before handling update
-        if(currentUser._id === req.userId){
+        if(recipeToUpdate.user._id === currentUser._id){
             // handle if recipe is added/removed from any foodbook(s)
             for(foodbook in currentUser.foodbooks) {
                 const checkedFoodbook = req.body['foodbook_' + foodbook._id] === 'on';
@@ -111,9 +118,9 @@ router.put('/:recipeId', async (req, res) => {
 // recipe delete
 router.delete('/:recipeId', async (req, res) => {
     try {
-        // find recipe to be deleted, populate its recipes
+        // find recipe to be deleted, populate its foodbooks, user
         const deletedRecipe = await db.Recipe.findById(req.params.recipeId)
-            .populate({path: 'recipes'}).exec();
+            .populate('Foodbook').exec(); // TODO is it necessary to populate here?
 
         // extra failsafe to handle if recipe doesn't exist
         if(!deletedRecipe) return res.status(200).json({message: "Sorry, that recipe doesn't exist in our database. Please try again."}); 

@@ -19,7 +19,7 @@ const userSchema = new mongoose.Schema(
         },
         foodbooks: [{
             type: mongoose.Schema.Types.ObjectId,
-            ref: 'Foodbooks',
+            ref: 'Foodbook',
         }],
     },
     {timestamps: true}
