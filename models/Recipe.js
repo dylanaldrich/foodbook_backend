@@ -7,6 +7,10 @@ module.exports = mongoose.model('Recipe', new mongoose.Schema(
             required: true,
             unique: true,
         },
+        name: {
+            type: String,
+            required: true,
+        },
         recipe_type: {
             type: String,
             required: true,

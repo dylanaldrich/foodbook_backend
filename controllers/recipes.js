@@ -48,7 +48,7 @@ router.post('/', async (req, res) => {
 
         res.status(201).json({
             recipe: createdRecipe,
-            currentUser: currentUser, // <= for testing
+            // currentUser: currentUser, // <= for testing
         });
     } catch (error) {
         return res.status(500).json({

@@ -5,19 +5,13 @@ const db = require('../models');
 // user show
 router.get('/', async (req, res) => {
     try {
-        const foundUser = await db.User.findById(req.userId)
-            .populate({
-                path: 'Foodbook',
-                populate: {
-                    path: 'Recipe'
-                }
-            })
-            .populate('Recipe')
-            .exec();
+        const foundUser = await db.User.findById(req.userId);
 
+        const userFoodbooks = await db.Foodbook.find({user: req.userId}).populate('recipes').exec();
+        console.log("userFoodbooks", userFoodbooks);
         // NOTE If I have trouble accessing user's foodbooks and their nested recipes on user show page, write in two other db queries here and then pass the data along with the response:
 
-        res.status(200).json({status: 200, data: foundUser});
+        res.status(200).json({status: 200, data: foundUser, foodbooks: userFoodbooks });
     } catch (error) {
         return res.status(500).json({
             status: 500,
