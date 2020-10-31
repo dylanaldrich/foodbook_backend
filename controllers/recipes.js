@@ -22,8 +22,8 @@ router.post('/', async (req, res) => {
         // for each of the current user's foodbooks that was checked on the new recipe form, set up the two-way connection between recipe and foodbook(s)
         // for(foodbook of currentUser.foodbooks) {
         //     if(req.body['foodbook_' + foodbook._id] === 'on') {
-                // push the foodbook into the recipe's foodbooks array
-                // await createdRecipe.foodbooks.push(foodbook);
+        //         // push the foodbook into the recipe's foodbooks array
+        //         await createdRecipe.foodbooks.push(foodbook);
                 /* FOR TESTING PURPOSES: */
                 req.body.foodbooks.forEach(async (foodbook) => { // pass in an array of foodbookIds in the request in insomnia
                     const linkedFoodbook = await db.Foodbook.findById(foodbook);
@@ -40,12 +40,12 @@ router.post('/', async (req, res) => {
         // }
         // add the user to the recipe
         createdRecipe.user = currentUser;
-        createdRecipe.save();
+        await createdRecipe.save();
         console.log("createdRecipe AFTER save: ", createdRecipe);
 
         // add the recipe to the user
         currentUser.recipes.push(createdRecipe);
-        currentUser.save();
+        await currentUser.save();
 
         res.status(201).json({
             recipe: createdRecipe,
@@ -60,25 +60,6 @@ router.post('/', async (req, res) => {
     }
 });
 
-
-// recipe show -- NOTE I think this will be unnecessary, because I will write this into the search controller to fetch one recipe
-// router.get('/:recipeId', async (req, res) => {
-//     try {
-//         const foundRecipe = await db.Recipe.findById(req.params.recipeId);
-
-//         // verify that the current user is the owner of the recipe
-//         if(foundRecipe.user._id === req.userId){
-//             res.status(200).json({recipe: foundRecipe});
-//         }
-//     } catch (error) {
-//         return res.status(500).json({
-//             status: 500,
-//             message: 'Something went wrong. Please try again.'
-//         });
-//     }
-// });
-
-// TODO - on the frontend, write in logic on recipe detail to determine if a recipe has been saved into a user's foodbook(s), and if so, display an edit button, or if not, display the ADD button (and on search results also, as a stretch goal)
 // recipe update
 router.put('/:recipeId', async (req, res) => {
     try {
@@ -114,14 +95,14 @@ router.put('/:recipeId', async (req, res) => {
                 const foodbookToUpdate = await db.Foodbook.findById(foodbook._id);
 
                 if(isAddedFoodbook) {
-                    await recipeToUpdate.foodbooks.push(foodbook);
+                    recipeToUpdate.foodbooks.push(foodbook);
                     foodbookToUpdate.recipes.push(recipeToUpdate);
-                    foodbookToUpdate.save();
+                    await foodbookToUpdate.save();
                 } 
                 else if(isRemovedFoodbook) {
-                    await recipeToUpdate.foodbooks.remove(foodbook);
+                    recipeToUpdate.foodbooks.remove(foodbook);
                     foodbookToUpdate.recipes.remove(recipeToUpdate);
-                    foodbookToUpdate.save();
+                    await foodbookToUpdate.save();
                 }
             }
             await recipeToUpdate.save();

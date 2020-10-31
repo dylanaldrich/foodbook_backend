@@ -7,8 +7,7 @@ const controllers = require('./controllers');
 const authRequired = require('./middleware/authRequired');
 
 /* Config */
-// const PORT = proc.env.PORT || 3001;
-const PORT = 3001;
+const PORT = process.env.PORT || 3001;
 const app = express();
 
 /* Middleware */
@@ -28,7 +27,7 @@ app.use('/user', controllers.user);
 app.use('/foodbooks', controllers.foodbooks);
 
 // Recipes routes (auth required)
-app.use('/recipes', controllers.recipes);
+app.use('/recipe', controllers.recipes);
 
 /* Connection */
 app.listen(PORT, () => console.log( `Server is running on port ${PORT}`));

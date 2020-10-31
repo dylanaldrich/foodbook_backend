@@ -2,6 +2,8 @@ const express = require('express');
 const router = express.Router();
 const axios = require('axios');
 
+/* EXTERNAL API ROUTES */
+
 // search all recipes
 router.get('/:query', async (req, res) => {
     try {
@@ -22,24 +24,19 @@ router.get('/:query', async (req, res) => {
     } catch (error) {
         return res.status(500).json({
             status: 500,
-            message: 'Something went wrong. Please try again.',
+            message: "Sorry, that search didn't work. Please try again.",
             error: error,
         });
     }
 });
 
 
-// recipe detail
-router.get('/show/:recipeUri', async (req, res) => {
+// get one recipe
+router.get('/show/:edamam_id', async (req, res) => {
     try {
-        /* NOTE: The query works if I set q with a value of the very end of a recipe's URI, which looks to be like its id. However, there is no specific key/value pair with a recipe ID from Edamam. */
-        //For example: 
-        // URI: http://www.edamam.com/ontologies/edamam.owl#recipe_aad2ecd8d553def1b85da00a45fc6e29
-        // therefore, the query works if I can isolate the ending: aad2ecd8d553def1b85da00a45fc6e29
-
         const foundRecipe = await axios.get('https://api.edamam.com/search', {
             params: {
-                q: req.params.recipeUri,
+                q: req.params.edamam_id,
                 app_id: 'e5bc8cdc',
                 app_key: '9d7dfee460130fbbc136b5851c16ea0b',
             }
@@ -52,7 +49,7 @@ router.get('/show/:recipeUri', async (req, res) => {
     } catch (error) {
         return res.status(500).json({
             status: 500,
-            message: 'Something went wrong. Please try again.',
+            message: "Sorry, we couldn't retrieve that recipe. Please try again.",
             error: error,
         });
     }
