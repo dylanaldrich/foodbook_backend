@@ -23,10 +23,18 @@ router.get('/', async (req, res) => {
 // user update
 router.put('/', async (req, res) => {
     try {
-        const updatedUser = await db.User.findByIdAndUpdate(req.userId, req.body, {new: true});
+        const updatedUser = await db.User.findById(req.userId);
 
-        // extra failsafe to handle if user doesn't exist
-        if(!updatedUser) return res.status(200).json({message: "Sorry, that user doesn't exist in our database. Please try again."}); 
+        // extra failsafe to handle if user doesn't exist 
+        if(!updatedUser) return res.status(200).json({message: "Sorry, that user doesn't exist in our database. Please try again."});
+        if(!req.body.email || !req.body.username) return res.status(406).json({message: "Sorry, the form is incomplete. Please try again."});
+        
+        // update username and email
+        updatedUser.username = req.body.username;
+        updatedUser.email = req.body.email;
+
+        // save the user
+        await updatedUser.save();
 
         res.status(200).json({status: 200, data: updatedUser});
     } catch (error) {

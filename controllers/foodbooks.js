@@ -41,7 +41,7 @@ router.post('/', async (req, res) => {
 // foodbook show
 router.get('/:foodbookId', async (req, res) => {
     try {
-        const foundFoodbook = await db.Foodbook.findById(req.params.foodbookId);
+        const foundFoodbook = await db.Foodbook.findById(req.params.foodbookId).populate('recipes');
 
         // verify that the current user is the owner of the foodbook
         // if(foundFoodbook.user._id === req.userId){
