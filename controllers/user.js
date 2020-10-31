@@ -3,15 +3,19 @@ const router = express.Router();
 const db = require('../models');
 
 // user show
-router.get('/:userId', async (req, res) => {
+router.get('/', async (req, res) => {
     try {
-        const foundUser = await db.User.findById(req.params.userId)
+        const foundUser = await db.User.findById(req.userId)
             .populate({
-                path: 'Foodbooks',
+                path: 'Foodbook',
                 populate: {
-                    path: 'Recipes'
+                    path: 'Recipe'
                 }
-            });
+            })
+            .populate('Recipe')
+            .exec();
+
+        // NOTE If I have trouble accessing user's foodbooks and their nested recipes on user show page, write in two other db queries here and then pass the data along with the response:
 
         res.status(200).json({status: 200, data: foundUser});
     } catch (error) {
@@ -23,9 +27,9 @@ router.get('/:userId', async (req, res) => {
 });
 
 // user update
-router.put('/:userId', async (req, res) => {
+router.put('/', async (req, res) => {
     try {
-        const updatedUser = await db.User.findByIdAndUpdate(req.params.userId, req.body, {new: true});
+        const updatedUser = await db.User.findByIdAndUpdate(req.userId, req.body, {new: true});
 
         // extra failsafe to handle if user doesn't exist
         if(!updatedUser) return res.status(200).json({message: "Sorry, that user doesn't exist in our database. Please try again."}); 
@@ -40,10 +44,10 @@ router.put('/:userId', async (req, res) => {
 });
 
 // user delete
-router.delete('/:userId', async (req, res) => {
+router.delete('/', async (req, res) => {
     try {
         // find user to be deleted, populate their foodbooks
-        const deletedUser = await db.User.findById(req.params.userId);
+        const deletedUser = await db.User.findById(req.userId);
 
         // extra failsafe to handle if user doesn't exist
         if(!deletedUser) return res.status(200).json({message: "Sorry, that user doesn't exist in our database. Please try again."}); 

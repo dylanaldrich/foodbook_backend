@@ -81,7 +81,7 @@ router.put('/:foodbookId', async (req, res) => {
 router.delete('/:foodbookId', async (req, res) => {
     try {
         // find foodbook to be deleted; populate its recipes and user
-        const deletedFoodbook = await db.Foodbook.findById(req.params.foodbookId).populate('Recipes').exec();
+        const deletedFoodbook = await db.Foodbook.findById(req.params.foodbookId).populate('Recipe').exec();
         
         // extra failsafe to handle if foodbook doesn't exist
         if(!deletedFoodbook) return res.status(200).json({message: "Sorry, that foodbook doesn't exist in our database. Please try again."}); 

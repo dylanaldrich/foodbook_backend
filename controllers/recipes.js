@@ -6,7 +6,6 @@ const db = require('../models');
 /* Recipes routes */
 
 // recipe create
-// NOTE: Not sure how to pass in the necessary info from the API response object to save a recipe into my db and be able to access it later
 router.post('/', async (req, res) => {
     try {
         // create the recipe
@@ -129,7 +128,7 @@ router.put('/:recipeId', async (req, res) => {
 // recipe delete
 router.delete('/:recipeId', async (req, res) => {
     try {
-        // find recipe to be deleted, populate its foodbooks, user
+        // find recipe to be deleted
         const deletedRecipe = await db.Recipe.findById(req.params.recipeId);
         console.log("deletedRecipe: ", deletedRecipe);
         // extra failsafe to handle if recipe doesn't exist
