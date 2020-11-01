@@ -5,6 +5,28 @@ const db = require('../models');
 
 /* Recipes routes */
 
+// recipe remove from one foodbook
+router.post('/:recipeId/:foodbookId', async (req, res) => {
+    try {
+        const removedRecipe = await db.Recipe.findById(req.params.recipeId);
+        const foodbookToUpdate = await db.Foodbook.findById(req.params.foodbookId);
+
+        foodbookToUpdate.recipes.remove(removedRecipe);
+        await foodbookToUpdate.save();
+
+        removedRecipe.foodbooks.remove(foodbookToUpdate);
+        await removedRecipe.save();
+
+        res.status(200).json({message: "Recipe removed succesfully."});
+    } catch (error) {
+        return res.status(500).json({
+            status: 500,
+            message: 'Something went wrong. Please try again.',
+            error: error,
+        });
+    }
+});
+
 // recipe create
 router.post('/', async (req, res) => {
     try {
@@ -168,27 +190,7 @@ router.delete('/:recipeId', async (req, res) => {
     }
 });
 
-// recipe remove from one foodbook
-router.post('/:recipeId/:foodbookId', async (req, res) => {
-    try {
-        const removedRecipe = await db.Recipe.findById(req.params.recipeId);
-        const foodbookToUpdate = await db.Foodbook.findById(req.params.foodbookId);
 
-        foodbookToUpdate.recipes.remove(removedRecipe);
-        await foodbookToUpdate.save();
-
-        removedRecipe.foodbooks.remove(foodbookToUpdate);
-        await removedRecipe.save();
-
-        res.status(200).json({message: "Recipe removed succesfully."});
-    } catch (error) {
-        return res.status(500).json({
-            status: 500,
-            message: 'Something went wrong. Please try again.',
-            error: error,
-        });
-    }
-});
 
 
 /* Exports */

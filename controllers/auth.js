@@ -60,7 +60,7 @@ router.post('/login', async (req, res) => {
                 },
                 'super_secret_key',
                 {
-                    expiresIn: '1h',
+                    expiresIn: '5h',
                 }
             );
 
