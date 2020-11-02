@@ -23,6 +23,7 @@ router.post('/', async (req, res) => {
         currentUser.save();
 
         res.status(201).json({
+            status: 201,
             foodbook: createdFoodbook});
     } catch (error) {
         return res.status(500).json({
@@ -61,7 +62,10 @@ router.put('/:foodbookId', async (req, res) => {
 
         // verify that the current user is the owner of the foodbook
         // if(updatedFoodbook.user === req.userId){
-            res.status(200).json({updatedFoodbook: updatedFoodbook});
+            res.status(200).json({
+                status: 200,
+                updatedFoodbook: updatedFoodbook
+            });
         // }
     } catch (error) {
         return res.status(500).json({

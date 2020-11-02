@@ -69,6 +69,7 @@ router.post('/', async (req, res) => {
         await currentUser.save();
 
         res.status(201).json({
+            status: 201,
             recipe: createdRecipe,
             // currentUser: currentUser, // <= for testing
         });
@@ -134,6 +135,7 @@ router.put('/:recipeId', async (req, res) => {
             if(!updatedRecipe) return res.status(200).json({message: "Sorry, that recipe doesn't exist in our database. Please try again."}); 
 
             res.status(200).json({
+                status: 200,
                 updatedRecipe: updatedRecipe,
             });
         // }
