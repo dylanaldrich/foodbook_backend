@@ -9,10 +9,7 @@ const db = require('../models');
 router.post('/', async (req, res) => {
     try {
         // find the current user in order to push the created foodbook into their foodbooks array
-        // const currentUser = await db.User.findById(req.userId)
-        /* FOR TESTING ONLY: */
-        const currentUser = await db.User.findById(req.body.userId); // during testing, pass in a userId in the req.body
-        /* END TEST */
+        const currentUser = await db.User.findById(req.userId);
 
         // create the foodbook
         const createdFoodbook = await db.Foodbook.create(req.body);
@@ -26,13 +23,11 @@ router.post('/', async (req, res) => {
         currentUser.save();
 
         res.status(201).json({
-            foodbook: createdFoodbook,
-            foodbookOwner: currentUser}); // <= for testing
+            foodbook: createdFoodbook});
     } catch (error) {
         return res.status(500).json({
             status: 500,
             message: 'Something went wrong. Please try again.',
-            error: error
         });
     }
 });
