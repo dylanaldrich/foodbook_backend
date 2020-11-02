@@ -38,14 +38,11 @@ router.post('/', async (req, res) => {
         const currentUser = await db.User.findById(req.userId)
 
         // for each of the current user's foodbooks that was checked on the new recipe form, set up the two-way connection between recipe and foodbook(s)
-        currentUser.foodbooks.forEach(async (foodbook) => {
-            console.log("foodbook before linking: ", foodbook);
-            if(req.body['foodbook_' + foodbook._id] === 'on') {
-                const linkedFoodbook = await db.Foodbook.findById(foodbook._id);
-                createdRecipe.foodbooks.push(linkedFoodbook);
-                linkedFoodbook.recipes.push(createdRecipe);
-                await linkedFoodbook.save();
-            }
+        req.body.foodbooksIds.forEach(async (foodbook) => {
+            const linkedFoodbook = await db.Foodbook.findById(foodbook);
+            createdRecipe.foodbooks.push(linkedFoodbook);
+            linkedFoodbook.recipes.push(createdRecipe);
+            await linkedFoodbook.save();
         }) 
         //         // push the foodbook into the recipe's foodbooks array
         //         await createdRecipe.foodbooks.push(foodbook);
