@@ -35,23 +35,27 @@ router.post('/', async (req, res) => {
         console.log("createdRecipe before save: ", createdRecipe);
 
         // find the current user in order to push the created recipe into their foodbook(s)
-        // const currentUser = await db.User.findById(req.userId)
-        /* FOR TESTING PURPOSES: */
-        const currentUser = await db.User.findById(req.body.userId)
-        /* END TEST */
+        const currentUser = await db.User.findById(req.userId)
 
         // for each of the current user's foodbooks that was checked on the new recipe form, set up the two-way connection between recipe and foodbook(s)
-        // for(foodbook of currentUser.foodbooks) {
-        //     if(req.body['foodbook_' + foodbook._id] === 'on') {
+        currentUser.foodbooks.forEach(async (foodbook) => {
+            console.log("foodbook before linking: ", foodbook);
+            if(req.body['foodbook_' + foodbook._id] === 'on') {
+                const linkedFoodbook = await db.Foodbook.findById(foodbook._id);
+                createdRecipe.foodbooks.push(linkedFoodbook);
+                linkedFoodbook.recipes.push(createdRecipe);
+                await linkedFoodbook.save();
+            }
+        }) 
         //         // push the foodbook into the recipe's foodbooks array
         //         await createdRecipe.foodbooks.push(foodbook);
                 /* FOR TESTING PURPOSES: */
-                req.body.foodbooks.forEach(async (foodbook) => { // pass in an array of foodbookIds in the request in insomnia
-                    const linkedFoodbook = await db.Foodbook.findById(foodbook);
-                    createdRecipe.foodbooks.push(linkedFoodbook);
-                    linkedFoodbook.recipes.push(createdRecipe);
-                    await linkedFoodbook.save();
-                });
+                // req.body.foodbooks.forEach(async (foodbook) => { // pass in an array of foodbookIds in the request in insomnia
+                //     const linkedFoodbook = await db.Foodbook.findById(foodbook);
+                //     createdRecipe.foodbooks.push(linkedFoodbook);
+                //     linkedFoodbook.recipes.push(createdRecipe);
+                //     await linkedFoodbook.save();
+                // });
                 /* END TEST */
 
                 // push the new recipe into each foodbook's recipes array; save the foodbook
@@ -59,6 +63,7 @@ router.post('/', async (req, res) => {
                 // foodbook.save();
         //     }
         // }
+
         // add the user to the recipe
         createdRecipe.user = currentUser;
         await createdRecipe.save();
@@ -71,7 +76,7 @@ router.post('/', async (req, res) => {
         res.status(201).json({
             status: 201,
             recipe: createdRecipe,
-            // currentUser: currentUser, // <= for testing
+            currentUser: currentUser, // <= for testing
         });
     } catch (error) {
         return res.status(500).json({
