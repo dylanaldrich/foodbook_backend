@@ -44,22 +44,6 @@ router.post('/', async (req, res) => {
             linkedFoodbook.recipes.push(createdRecipe);
             await linkedFoodbook.save();
         }) 
-        //         // push the foodbook into the recipe's foodbooks array
-        //         await createdRecipe.foodbooks.push(foodbook);
-                /* FOR TESTING PURPOSES: */
-                // req.body.foodbooks.forEach(async (foodbook) => { // pass in an array of foodbookIds in the request in insomnia
-                //     const linkedFoodbook = await db.Foodbook.findById(foodbook);
-                //     createdRecipe.foodbooks.push(linkedFoodbook);
-                //     linkedFoodbook.recipes.push(createdRecipe);
-                //     await linkedFoodbook.save();
-                // });
-                /* END TEST */
-
-                // push the new recipe into each foodbook's recipes array; save the foodbook
-                // await foodbook.recipes.push(createdRecipe);
-                // foodbook.save();
-        //     }
-        // }
 
         // add the user to the recipe
         createdRecipe.user = currentUser;
