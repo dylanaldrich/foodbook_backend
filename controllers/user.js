@@ -8,8 +8,10 @@ router.get('/', async (req, res) => {
         const foundUser = await db.User.findById(req.userId);
 
         const userFoodbooks = await db.Foodbook.find({user: req.userId}).populate('recipes').exec();
+        
+        const userRecipes = await db.Recipe.find({user: req.userId});
 
-        res.status(200).json({status: 200, data: foundUser, foodbooks: userFoodbooks });
+        res.status(200).json({status: 200, data: foundUser, foodbooks: userFoodbooks, recipes: userRecipes });
     } catch (error) {
         return res.status(500).json({
             status: 500,

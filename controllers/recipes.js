@@ -32,12 +32,11 @@ router.post('/', async (req, res) => {
     try {
         // create the recipe
         const createdRecipe = await db.Recipe.create(req.body);
-        console.log("createdRecipe before save: ", createdRecipe);
 
-        // find the current user in order to push the created recipe into their foodbook(s)
+        // find the current user
         const currentUser = await db.User.findById(req.userId)
 
-        // for each of the current user's foodbooks that was checked on the new recipe form, set up the two-way connection between recipe and foodbook(s)
+        // loop through checked foodbooks and recipe/foodbook associations
         req.body.foodbooksIds.forEach(async (foodbook) => {
             const linkedFoodbook = await db.Foodbook.findById(foodbook);
             createdRecipe.foodbooks.push(linkedFoodbook);
@@ -48,7 +47,6 @@ router.post('/', async (req, res) => {
         // add the user to the recipe
         createdRecipe.user = currentUser;
         await createdRecipe.save();
-        console.log("createdRecipe AFTER save: ", createdRecipe);
 
         // add the recipe to the user
         currentUser.recipes.push(createdRecipe);
@@ -57,7 +55,6 @@ router.post('/', async (req, res) => {
         res.status(201).json({
             status: 201,
             recipe: createdRecipe,
-            currentUser: currentUser, // <= for testing
         });
     } catch (error) {
         return res.status(500).json({
