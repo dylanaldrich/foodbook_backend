@@ -5,6 +5,33 @@ const db = require('../models');
 
 /* Recipes routes */
 
+// recipe show
+router.get('/:recipeId', async (req, res) => {
+    try {
+        const foundRecipe = await db.Recipe.findById(req.params.recipeId).populate('foodbooks').exec();
+
+        console.log("recipe show foundRecipe: ", foundRecipe);
+
+        if(!foundRecipe) {
+            return res.status(404).status.json({
+                status: 404,
+                message: "This recipe couldn't be found in the database."
+            });
+        };
+
+        res.status(200).json({
+            status: 200,
+            foundRecipe: foundRecipe,
+        });
+    } catch (error) {
+        return res.status(500).json({
+            status: 500,
+            message: 'Something went wrong. Please try again.',
+            error: error,
+        });
+    }
+})
+
 // recipe remove from one foodbook
 router.post('/:recipeId/:foodbookId', async (req, res) => {
     try {
@@ -36,13 +63,21 @@ router.post('/', async (req, res) => {
         // find the current user
         const currentUser = await db.User.findById(req.userId)
 
-        // loop through checked foodbooks and recipe/foodbook associations
+        // loop through checked foodbooks and create recipe/foodbook associations
         req.body.foodbooksIds.forEach(async (foodbook) => {
-            const linkedFoodbook = await db.Foodbook.findById(foodbook);
-            createdRecipe.foodbooks.push(linkedFoodbook);
-            linkedFoodbook.recipes.push(createdRecipe);
-            await linkedFoodbook.save();
-        }) 
+            try {
+                const linkedFoodbook = await db.Foodbook.findById(foodbook);
+
+                await createdRecipe.foodbooks.push(linkedFoodbook);
+
+                await linkedFoodbook.recipes.push(createdRecipe);
+
+                await linkedFoodbook.save();
+            } catch (error) {
+                console.log("Error in foodbooks loop: ", error);
+            }
+        });
+        await createdRecipe.save();
 
         // add the user to the recipe
         createdRecipe.user = currentUser;
@@ -71,18 +106,11 @@ router.put('/:recipeId', async (req, res) => {
         // find current user
         // const currentUser = await db.User.findById(req.userId);
         /* TESTING: */
-        const currentUser = await db.User.findById(req.body.userId);
+        const currentUser = await db.User.findById(req.userId);
         /* END TEST */
 
         // find the recipe to be updated; populate its user and their foodbooks
-        const recipeToUpdate = await db.Recipe.findById(req.params.recipeId)
-            .populate({
-                path: 'User',
-                populate: {
-                    path: 'Foodbook',
-                }
-            })
-            .exec();
+        const recipeToUpdate = await db.Recipe.findById(req.params.recipeId);
 
         // verify that the current user is the owner of the recipe before handling update
         // if(recipeToUpdate.user === currentUser._id){ // uncomment for production

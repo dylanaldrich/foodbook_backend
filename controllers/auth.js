@@ -45,6 +45,12 @@ router.post('/login', async (req, res) => {
 
         console.log("foundUser: ", foundUser);
 
+        if(foundUser === null) {
+            return res.status(404).json({
+                status: 404,
+                message: "That user doesn't exist yet. Please register first."});
+        }
+
         if(!foundUser) {
             return res.sendStatus(500).json({message: 'The username or password is incorrect.'});
         }

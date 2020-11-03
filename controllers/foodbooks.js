@@ -16,15 +16,14 @@ router.post('/', async (req, res) => {
 
         // give foodbook's user prop the value of currentUser
         createdFoodbook.user = currentUser;
-        createdFoodbook.save();
+        await createdFoodbook.save();
 
         // push the new foodbook into currentUser's foodbooks array
-        currentUser.foodbooks.push(createdFoodbook);
-        currentUser.save();
+        await currentUser.foodbooks.push(createdFoodbook);
+        await currentUser.save();
 
         res.status(201).json({
-            status: 201,
-            foodbook: createdFoodbook});
+            status: 201});
     } catch (error) {
         return res.status(500).json({
             status: 500,
