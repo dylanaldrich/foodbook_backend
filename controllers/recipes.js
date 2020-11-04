@@ -8,7 +8,7 @@ const db = require('../models');
 // recipe show
 router.get('/:recipeId', async (req, res) => {
     try {
-        const foundRecipe = await db.Recipe.findById(req.params.recipeId).populate('foodbooks').exec();
+        const foundRecipe = await db.Recipe.findById(req.params.recipeId);
 
         console.log("recipe show foundRecipe: ", foundRecipe);
 
