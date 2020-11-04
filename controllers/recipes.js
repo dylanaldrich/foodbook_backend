@@ -104,52 +104,44 @@ router.post('/', async (req, res) => {
 router.put('/:recipeId', async (req, res) => {
     try {
         // find current user
-        // const currentUser = await db.User.findById(req.userId);
-        /* TESTING: */
         const currentUser = await db.User.findById(req.userId);
-        /* END TEST */
-
+        
         // find the recipe to be updated; populate its user and their foodbooks
-        const recipeToUpdate = await db.Recipe.findById(req.params.recipeId);
+        const updatedRecipe = await db.Recipe.findById(req.params.recipeId);
 
-        // verify that the current user is the owner of the recipe before handling update
-        // if(recipeToUpdate.user === currentUser._id){ // uncomment for production
-            // handle if recipe is added/removed from any foodbook(s)
-            for(foodbook of currentUser.foodbooks) {
-                // const checkedFoodbook = req.body['foodbook_' + foodbook._id] === 'on';
-                // const isInFoodbook = recipeToUpdate.foodbooks.includes(foodbook._id);
-                const checkedFoodbook = req.body.foodbooks; // FOR TESTING
-                const isInFoodbook = recipeToUpdate.foodbooks.includes(checkedFoodbook);  // FOR TESTING
-                console.log("isInFoodbook: ", isInFoodbook);
-                const isAddedFoodbook = checkedFoodbook && !isInFoodbook;
-                console.log("isAddedFoodbook: ", isAddedFoodbook);
-                const isRemovedFoodbook = isInFoodbook && !checkedFoodbook;
-                console.log("isRemovedFoodbook: ", isRemovedFoodbook);
-                const foodbookToUpdate = await db.Foodbook.findById(foodbook._id);
+        // clear the recipe's foodbooks array
+        updatedRecipe.foodbooks = [];
 
-                if(isAddedFoodbook) {
-                    recipeToUpdate.foodbooks.push(foodbook);
-                    foodbookToUpdate.recipes.push(recipeToUpdate);
-                    await foodbookToUpdate.save();
-                } 
-                else if(isRemovedFoodbook) {
-                    recipeToUpdate.foodbooks.remove(foodbook);
-                    foodbookToUpdate.recipes.remove(recipeToUpdate);
-                    await foodbookToUpdate.save();
-                }
-            }
-            await recipeToUpdate.save();
+        // remove the recipe from current user's foodbooks
+        // NOTE will have to test if currentUser.foodbooks is an array of ids or of objects
+        for(foodbook of currentUser.foodbooks) {
+            const foodbookForRemoval = await db.Foodbook.findById(foodbook);
 
-            const updatedRecipe = await db.Recipe.findByIdAndUpdate(req.params.recipeId, req.body, {new: true});
+            await foodbookForRemoval.recipes.remove(updatedRecipe);
+            
+            await foodbookForRemoval.save();
+        }
 
-            // extra failsafe to handle if recipe doesn't exist
-            if(!updatedRecipe) return res.status(200).json({message: "Sorry, that recipe doesn't exist in our database. Please try again."}); 
+        // add the recipe to the foodbooks checked in the form, save each
+        for(foodbook of req.body.foodbooksIds) {
+            const foodbookForAdd = await db.Foodbook.findById(foodbook);
 
-            res.status(200).json({
-                status: 200,
-                updatedRecipe: updatedRecipe,
-            });
-        // }
+            await foodbookForAdd.recipes.push(updatedRecipe);
+
+            await foodbookForAdd.save();
+
+            updatedRecipe.foodbooks.push(foodbookForAdd);
+        }
+
+        await updatedRecipe.save();
+
+        // extra failsafe to handle if recipe doesn't exist
+        if(!updatedRecipe) return res.status(200).json({message: "Sorry, that recipe doesn't exist in our database. Please try again."}); 
+
+        res.status(200).json({
+            status: 200,
+            updatedRecipe: updatedRecipe,
+        });
     } catch (error) {
         return res.status(500).json({
             status: 500,
@@ -165,35 +157,33 @@ router.delete('/:recipeId', async (req, res) => {
     try {
         // find recipe to be deleted
         const deletedRecipe = await db.Recipe.findById(req.params.recipeId);
-        console.log("deletedRecipe: ", deletedRecipe);
+
         // extra failsafe to handle if recipe doesn't exist
         if(!deletedRecipe) return res.status(200).json({message: "Sorry, that recipe doesn't exist in our database. Please try again."}); 
 
-        // verify that the current user is the owner of the recipe
-        // if(deletedRecipe.user === req.userId){ //uncomment for production
-            // update foodbooks where recipe is stored
-            const foodbooksToUpdate = deletedRecipe.foodbooks;
-            console.log("foodbooksToUpdate: ", foodbooksToUpdate);
-            for (foodbook of foodbooksToUpdate) {
-                // find each foodbook in the db
-                const foodbookToUpdate = await db.Foodbook.findById(foodbook)
-                // remove the reference to deletedRecipe; save foodbook
-                foodbookToUpdate.recipes.remove(deletedRecipe);
-                await foodbookToUpdate.save();
-            }
+        // update foodbooks where recipe is stored
+        const foodbooksToUpdate = deletedRecipe.foodbooks;
+        
+        for (foodbook of foodbooksToUpdate) {
+            // find each foodbook in the db
+            const foodbookToUpdate = await db.Foodbook.findById(foodbook)
+            
+            // remove the reference to deletedRecipe; save foodbook
+            foodbookToUpdate.recipes.remove(deletedRecipe);
+            await foodbookToUpdate.save();
+        }
 
-            // remove deletedRecipe from its user
-            const userToUpdate = await db.User.findById(deletedRecipe.user);
-            userToUpdate.recipes.remove(deletedRecipe);
+        // remove deletedRecipe from its user
+        const userToUpdate = await db.User.findById(deletedRecipe.user);
+        userToUpdate.recipes.remove(deletedRecipe);
 
-            // delete recipe from db
-            deletedRecipe.deleteOne();
+        // delete recipe from db
+        deletedRecipe.deleteOne();
 
-            res.status(200).json({
-                message: "Delete successful",
-                userToUpdate: userToUpdate,
-            });
-        // } uncomment for production
+        res.status(200).json({
+            message: "Delete successful",
+            userToUpdate: userToUpdate,
+        });
     } catch (error) {
         return res.status(500).json({
             status: 500,
@@ -202,8 +192,6 @@ router.delete('/:recipeId', async (req, res) => {
         });
     }
 });
-
-
 
 
 /* Exports */
