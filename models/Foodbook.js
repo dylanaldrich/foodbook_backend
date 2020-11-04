@@ -1,5 +1,7 @@
+/* imports */
 const mongoose = require('mongoose');
 
+/* Foodbook Model */
 module.exports = mongoose.model('Foodbook', new mongoose.Schema(
     {
         name: {

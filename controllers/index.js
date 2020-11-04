@@ -1,3 +1,5 @@
+/* Controllers Index */
+
 module.exports = {
     auth: require('./auth'),
     foodbooks: require('./foodbooks'),

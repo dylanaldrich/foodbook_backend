@@ -1,7 +1,11 @@
+/* imports */
 const mongoose = require('mongoose');
+
+/* MongoDB connection */
 
 const connectionString = 'mongodb://localhost:27017/foodbook-db';
 
+// handle db connection
 mongoose.connect(connectionString, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
@@ -13,6 +17,7 @@ mongoose.connect(connectionString, {
     console.log('MongoDB connection error: ', error);
 });
 
+// handle db disconnect
 mongoose.connection.on('disconnected', () => {
     console.log("MongoDB is disconnected.");
 });

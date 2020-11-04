@@ -8,10 +8,10 @@ const db = require('../models');
 // recipe show
 router.get('/:recipeId', async (req, res) => {
     try {
+        // find the recipe
         const foundRecipe = await db.Recipe.findById(req.params.recipeId);
 
-        console.log("recipe show foundRecipe: ", foundRecipe);
-
+        // failsafe error if not found
         if(!foundRecipe) {
             return res.status(404).status.json({
                 status: 404,
@@ -30,17 +30,23 @@ router.get('/:recipeId', async (req, res) => {
             error: error,
         });
     }
-})
+});
+
 
 // recipe remove from one foodbook
 router.post('/:recipeId/:foodbookId', async (req, res) => {
     try {
+        // find the removed recipe
         const removedRecipe = await db.Recipe.findById(req.params.recipeId);
+
+        // find the foodbook it was removed from
         const foodbookToUpdate = await db.Foodbook.findById(req.params.foodbookId);
 
+        // remove recipe from foodbook
         foodbookToUpdate.recipes.remove(removedRecipe);
         await foodbookToUpdate.save();
 
+        // remove foodbook from recipe 
         removedRecipe.foodbooks.remove(foodbookToUpdate);
         await removedRecipe.save();
 
@@ -53,6 +59,7 @@ router.post('/:recipeId/:foodbookId', async (req, res) => {
         });
     }
 });
+
 
 // recipe create
 router.post('/', async (req, res) => {
@@ -74,7 +81,11 @@ router.post('/', async (req, res) => {
 
                 await linkedFoodbook.save();
             } catch (error) {
-                console.log("Error in foodbooks loop: ", error);
+                return res.status(500).json({
+                    status: 500,
+                    message: 'Something went wrong. Please try again.',
+                    error: error,
+                });
             }
         });
         await createdRecipe.save();
@@ -100,6 +111,7 @@ router.post('/', async (req, res) => {
     }
 });
 
+
 // recipe update
 router.put('/:recipeId', async (req, res) => {
     try {
@@ -109,11 +121,16 @@ router.put('/:recipeId', async (req, res) => {
         // find the recipe to be updated; populate its user and their foodbooks
         const updatedRecipe = await db.Recipe.findById(req.params.recipeId);
 
+        // extra failsafe to handle if recipe doesn't exist in db
+        if(!updatedRecipe) return res.status(200).json({message: "Sorry, that recipe doesn't exist in our database. Please try again."});
+
         // clear the recipe's foodbooks array
         updatedRecipe.foodbooks = [];
 
+        // update recipe type
+        updatedRecipe.recipe_type = req.body.recipe_type;
+
         // remove the recipe from current user's foodbooks
-        // NOTE will have to test if currentUser.foodbooks is an array of ids or of objects
         for(foodbook of currentUser.foodbooks) {
             const foodbookForRemoval = await db.Foodbook.findById(foodbook);
 
@@ -133,10 +150,8 @@ router.put('/:recipeId', async (req, res) => {
             updatedRecipe.foodbooks.push(foodbookForAdd);
         }
 
+        // save the recipe
         await updatedRecipe.save();
-
-        // extra failsafe to handle if recipe doesn't exist
-        if(!updatedRecipe) return res.status(200).json({message: "Sorry, that recipe doesn't exist in our database. Please try again."}); 
 
         res.status(200).json({
             status: 200,

@@ -1,5 +1,7 @@
+/* imports */
 const mongoose = require('mongoose');
 
+/* Recipe Schema */
 module.exports = mongoose.model('Recipe', new mongoose.Schema(
     {
         edamam_id: {

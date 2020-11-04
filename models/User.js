@@ -1,5 +1,7 @@
+/* imports */
 const mongoose = require('mongoose');
 
+/* User Schema */
 const userSchema = new mongoose.Schema(
     {
         username: {
@@ -11,7 +13,8 @@ const userSchema = new mongoose.Schema(
             type: String,
             required: true,
             unique: true,
-            match: /[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/, // Email must match typical email format: xxx@yyy.zzz
+            // Email must match typical email format: xxx@yyy.zzz
+            match: /[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/,
         },
         password: {
             type: String,
@@ -29,6 +32,7 @@ const userSchema = new mongoose.Schema(
     {timestamps: true}
 );
 
+// remove user's password from json response
 userSchema.set("toJSON", {
     transform: (doc, ret, opt) => {
         delete ret["password"];

@@ -1,14 +1,16 @@
+/* imports */
 const express = require('express');
 const router = express.Router();
 const db = require('../models');
 
+/* User Routes */
+
 // user show
 router.get('/', async (req, res) => {
     try {
+        // find the user, and their foodbooks and recipes
         const foundUser = await db.User.findById(req.userId);
-
         const userFoodbooks = await db.Foodbook.find({user: req.userId}).populate('recipes').exec();
-        
         const userRecipes = await db.Recipe.find({user: req.userId});
 
         res.status(200).json({status: 200, data: foundUser, foodbooks: userFoodbooks, recipes: userRecipes });
@@ -20,13 +22,17 @@ router.get('/', async (req, res) => {
     }
 });
 
+
 // user update
 router.put('/', async (req, res) => {
     try {
+        // find the user
         const updatedUser = await db.User.findById(req.userId);
 
         // extra failsafe to handle if user doesn't exist 
         if(!updatedUser) return res.status(200).json({message: "Sorry, that user doesn't exist in our database. Please try again."});
+
+        // handle if update form was incomplete
         if(!req.body.email || !req.body.username) return res.status(406).json({message: "Sorry, the form is incomplete. Please try again."});
         
         // update username and email
@@ -45,10 +51,11 @@ router.put('/', async (req, res) => {
     }
 });
 
+
 // user delete
 router.delete('/', async (req, res) => {
     try {
-        // find user to be deleted, populate their foodbooks
+        // find deleted user 
         const deletedUser = await db.User.findById(req.userId);
 
         // extra failsafe to handle if user doesn't exist
@@ -71,5 +78,6 @@ router.delete('/', async (req, res) => {
         });
     }
 });
+
 
 module.exports = router;
