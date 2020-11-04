@@ -1,20 +1,18 @@
+/* imports */
 const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcryptjs');
 const db = require('../models');
 const jwt = require('jsonwebtoken');
 
+/* Auth Routes */
+
 // register route
 router.post('/register', async (req, res) => {
     try {
-        // upon register submit, verify that email is not in the db, otherwise prompt user to try again
+        // upon register submit, verify that email is not in the db, otherwise prompt user to try again/login
         const foundUser = await db.User.findOne({email: req.body.email});
-
-        if(foundUser) return res.send({message: 'A user with this email address already exists. Please try again.'});
-
-        // validate password (stretch goal) -- Add in the password test fxn from here:
-        // https://www.oreilly.com/library/view/regular-expressions-cookbook/9781449327453/ch04s19.html
-        /* match: /^(?=.{8,32}$)(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9]).*/ // Password must have between 8-32 characters, and at least one of each: lowercase, Uppercase, number */
+        if(foundUser) return res.send({message: 'A user with this email address already exists. Please log in, or register with a different email address.'});
 
         // encrypt password
         const salt = await bcrypt.genSalt(10);
@@ -24,43 +22,52 @@ router.post('/register', async (req, res) => {
         // create new user in db, with encrypted password
         const createdUser = await db.User.create({...req.body, password: hash});
 
-        // provide a success response and the new user's data
-        return res
-            .status(201)
-            .json({status: 201, message: "success", createdUser});
+        return res.status(201).json({status: 201, message: "success", createdUser});
     } catch (error) {
         return res
             .status(500)
             .json({
                 status: 500,
                 message: "Something went wrong. Please try again.",
+                error: error,
             });
     }
 });
 
+
 // login route
 router.post('/login', async (req, res) => {
     try {
+        // find the user
         const foundUser = await db.User.findOne({email : req.body.email});
 
-        console.log("foundUser: ", foundUser);
+        // send error if user is null
+        if(foundUser === null) {
+            return res.status(404).json({
+                status: 404,
+                message: "That user doesn't exist yet. Please register first."});
+        }
 
+        // handle invalid login attempt
         if(!foundUser) {
             return res.sendStatus(500).json({message: 'The username or password is incorrect.'});
         }
 
+        // compare password from form with password in db
         const match = await bcrypt.compare(req.body.password, foundUser.password);
 
+        // handle invalid login attempt, or authenticate user
         if(!match) {
             return res.sendStatus(500).json({message: 'The username or password is incorrect.'});
         } else {
+            // create signed jwt token
             const signedJwt = await jwt.sign(
                 {
                     _id: foundUser._id,
                 },
                 'super_secret_key',
                 {
-                    expiresIn: '1h',
+                    expiresIn: '5h',
                 }
             );
 
@@ -81,10 +88,6 @@ router.post('/login', async (req, res) => {
             });
     }
 });
-
-
-// logout route
-// handled on the frontend by deleting token from local storage
 
 
 module.exports = router;

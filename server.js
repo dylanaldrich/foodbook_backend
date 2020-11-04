@@ -21,13 +21,13 @@ app.use('/auth', controllers.auth);
 app.use('/search', controllers.search);
 
 // User routes (auth required)
-app.use('/user', controllers.user);
+app.use('/user', authRequired, controllers.user);
 
 // Foodbooks routes (auth required)
-app.use('/foodbooks', controllers.foodbooks);
+app.use('/foodbooks', authRequired, controllers.foodbooks);
 
 // Recipes routes (auth required)
-app.use('/recipe', controllers.recipes);
+app.use('/recipe', authRequired, controllers.recipes);
 
 /* Connection */
 app.listen(PORT, () => console.log( `Server is running on port ${PORT}`));

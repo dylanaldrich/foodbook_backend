@@ -1,19 +1,19 @@
+/* imports */
 const express = require('express');
 const router = express.Router();
 const db = require('../models');
 
-// user show
-router.get('/:userId', async (req, res) => {
-    try {
-        const foundUser = await db.User.findById(req.params.userId)
-            .populate({
-                path: 'Foodbooks',
-                populate: {
-                    path: 'Recipes'
-                }
-            });
+/* User Routes */
 
-        res.status(200).json({status: 200, data: foundUser});
+// user show
+router.get('/', async (req, res) => {
+    try {
+        // find the user, and their foodbooks and recipes
+        const foundUser = await db.User.findById(req.userId);
+        const userFoodbooks = await db.Foodbook.find({user: req.userId}).populate('recipes').exec();
+        const userRecipes = await db.Recipe.find({user: req.userId});
+
+        res.status(200).json({status: 200, data: foundUser, foodbooks: userFoodbooks, recipes: userRecipes });
     } catch (error) {
         return res.status(500).json({
             status: 500,
@@ -22,13 +22,25 @@ router.get('/:userId', async (req, res) => {
     }
 });
 
-// user update
-router.put('/:userId', async (req, res) => {
-    try {
-        const updatedUser = await db.User.findByIdAndUpdate(req.params.userId, req.body, {new: true});
 
-        // extra failsafe to handle if user doesn't exist
-        if(!updatedUser) return res.status(200).json({message: "Sorry, that user doesn't exist in our database. Please try again."}); 
+// user update
+router.put('/', async (req, res) => {
+    try {
+        // find the user
+        const updatedUser = await db.User.findById(req.userId);
+
+        // extra failsafe to handle if user doesn't exist 
+        if(!updatedUser) return res.status(200).json({message: "Sorry, that user doesn't exist in our database. Please try again."});
+
+        // handle if update form was incomplete
+        if(!req.body.email || !req.body.username) return res.status(406).json({message: "Sorry, the form is incomplete. Please try again."});
+        
+        // update username and email
+        updatedUser.username = req.body.username;
+        updatedUser.email = req.body.email;
+
+        // save the user
+        await updatedUser.save();
 
         res.status(200).json({status: 200, data: updatedUser});
     } catch (error) {
@@ -39,11 +51,12 @@ router.put('/:userId', async (req, res) => {
     }
 });
 
+
 // user delete
-router.delete('/:userId', async (req, res) => {
+router.delete('/', async (req, res) => {
     try {
-        // find user to be deleted, populate their foodbooks
-        const deletedUser = await db.User.findById(req.params.userId);
+        // find deleted user 
+        const deletedUser = await db.User.findById(req.userId);
 
         // extra failsafe to handle if user doesn't exist
         if(!deletedUser) return res.status(200).json({message: "Sorry, that user doesn't exist in our database. Please try again."}); 
@@ -65,5 +78,6 @@ router.delete('/:userId', async (req, res) => {
         });
     }
 });
+
 
 module.exports = router;

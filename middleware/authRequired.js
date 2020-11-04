@@ -1,7 +1,10 @@
+/* imports */
 const jwt = require('jsonwebtoken');
 
+/* Auth middleware */
 module.exports = (req, res, next) => {
     const bearerHeader = req.headers['authorization'];
+    
     if(typeof bearerHeader !== 'undefined') {
         const token = bearerHeader.split(" ")[1];
 
