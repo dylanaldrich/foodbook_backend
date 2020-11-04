@@ -8,7 +8,7 @@ module.exports = (req, res, next) => {
     if(typeof bearerHeader !== 'undefined') {
         const token = bearerHeader.split(" ")[1];
 
-        jwt.verify(token, 'super_secret_key', function(err, payload) {
+        jwt.verify(token, process.env.SECRET, function(err, payload) {
             if(err) return res.status(500).json({message: 'Invalid token'});
 
             req.userId = payload._id;

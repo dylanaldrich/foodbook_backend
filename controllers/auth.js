@@ -65,7 +65,7 @@ router.post('/login', async (req, res) => {
                 {
                     _id: foundUser._id,
                 },
-                'super_secret_key',
+                process.env.SECRET,
                 {
                     expiresIn: '5h',
                 }

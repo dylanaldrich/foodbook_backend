@@ -1,9 +1,10 @@
 /* imports */
 const mongoose = require('mongoose');
+require('dotenv').config();
 
 /* MongoDB connection */
 
-const connectionString = process.env.MONGODB_URI || 'mongodb://localhost:27017/foodbook-db';
+const connectionString = process.env.MONGODB_URI;
 
 // handle db connection
 mongoose.connect(connectionString, {

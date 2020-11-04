@@ -7,6 +7,7 @@ const controllers = require('./controllers');
 const authRequired = require('./middleware/authRequired');
 
 /* Config */
+require('dotenv').config();
 const PORT = process.env.PORT || 3001;
 const app = express();
 
