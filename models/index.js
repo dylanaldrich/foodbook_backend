@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 
 /* MongoDB connection */
 
-const connectionString = 'mongodb://localhost:27017/foodbook-db';
+const connectionString = process.env.MONGODB_URI || 'mongodb://localhost:27017/foodbook-db';
 
 // handle db connection
 mongoose.connect(connectionString, {
