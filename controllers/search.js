@@ -15,6 +15,8 @@ router.get('/:query', async (req, res) => {
                 q: req.params.query,
                 app_id: 'e5bc8cdc',
                 app_key: '9d7dfee460130fbbc136b5851c16ea0b',
+                from: 0,
+                to: 100,
             }
         })
         .then((response) => {
