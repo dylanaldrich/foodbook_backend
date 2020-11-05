@@ -40,7 +40,7 @@ router.post('/:recipeId/:foodbookId', async (req, res) => {
         const removedRecipe = await db.Recipe.findById(req.params.recipeId);
 
         // find the foodbook it was removed from
-        const revisedFoodbook = await db.Foodbook.findById(req.params.foodbookId);
+        const revisedFoodbook = await db.Foodbook.findById(req.params.foodbookId).populate('recipes').exec();
 
         // remove recipe from foodbook
         revisedFoodbook.recipes.remove(removedRecipe);
