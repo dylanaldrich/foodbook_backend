@@ -40,14 +40,14 @@ router.post('/:recipeId/:foodbookId', async (req, res) => {
         const removedRecipe = await db.Recipe.findById(req.params.recipeId);
 
         // find the foodbook it was removed from
-        const foodbookToUpdate = await db.Foodbook.findById(req.params.foodbookId);
+        const revisedFoodbook = await db.Foodbook.findById(req.params.foodbookId);
 
         // remove recipe from foodbook
-        foodbookToUpdate.recipes.remove(removedRecipe);
-        await foodbookToUpdate.save();
+        revisedFoodbook.recipes.remove(removedRecipe);
+        await revisedFoodbook.save();
 
         // remove foodbook from recipe 
-        removedRecipe.foodbooks.remove(foodbookToUpdate);
+        removedRecipe.foodbooks.remove(revisedFoodbook);
 
         // if recipe has no foodbooks connections, delete it from db
         if(!removedRecipe.foodbooks.length) {
@@ -57,7 +57,10 @@ router.post('/:recipeId/:foodbookId', async (req, res) => {
             await removedRecipe.save();
         }
 
-        res.status(200).json({message: "Recipe removed succesfully."});
+        res.status(200).json({
+            message: "Recipe removed succesfully.",
+            revisedFoodbook: revisedFoodbook,
+        });
     } catch (error) {
         return res.status(500).json({
             status: 500,
