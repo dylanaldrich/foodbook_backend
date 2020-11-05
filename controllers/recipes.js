@@ -48,7 +48,14 @@ router.post('/:recipeId/:foodbookId', async (req, res) => {
 
         // remove foodbook from recipe 
         removedRecipe.foodbooks.remove(foodbookToUpdate);
-        await removedRecipe.save();
+
+        // if recipe has no foodbooks connections, delete it from db
+        if(!removedRecipe.foodbooks.length) {
+            await db.Recipe.findByIdAndDelete(req.params.recipeId);
+        } else {
+            // otherwise, save it
+            await removedRecipe.save();
+        }
 
         res.status(200).json({message: "Recipe removed succesfully."});
     } catch (error) {
