@@ -22,7 +22,7 @@ router.post('/register', async (req, res) => {
         // create new user in db, with encrypted password
         const createdUser = await db.User.create({...req.body, password: hash});
 
-        return res.status(201).json({status: 201, message: "success", createdUser});
+        return res.status(201).json({status: 201, message: "You're all signed up! Now you just need to log in.", createdUser});
     } catch (error) {
         return res
             .status(500)
