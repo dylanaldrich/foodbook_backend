@@ -1,6 +1,7 @@
 /* External imports */
 const express = require('express');
 const cors = require('cors');
+const morgan = require('morgan');
 
 /* Internal imports */
 const controllers = require('./controllers');
@@ -16,6 +17,7 @@ app.use(express.json());
 app.use(cors({
     origin: "*",
 }));
+app.use(morgan());
 
 // Auth routes
 app.use('/auth', controllers.auth);
