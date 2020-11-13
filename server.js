@@ -14,7 +14,7 @@ const app = express();
 /* Middleware */
 app.use(express.json());
 app.use(cors({
-    origin: "https://foodbook-recipeapp.herokuapp.com",
+    origin: ["https://foodbook-recipeapp.herokuapp.com", "https://foodbook-backend.herokuapp.com"],
 }));
 
 // Auth routes
