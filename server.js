@@ -1,7 +1,6 @@
 /* External imports */
 const express = require('express');
 const cors = require('cors');
-const morgan = require('morgan');
 
 /* Internal imports */
 const controllers = require('./controllers');
@@ -15,9 +14,8 @@ const app = express();
 /* Middleware */
 app.use(express.json());
 app.use(cors({
-    origin: "*",
+    origin: "https://foodbook-recipeapp.herokuapp.com",
 }));
-app.use(morgan());
 
 // Auth routes
 app.use('/auth', controllers.auth);
